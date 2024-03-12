@@ -16,22 +16,22 @@ from Telegram_v1 import aviso
 #
 mensaje=()
 diccionario={}
-host = {"BS3": {"IP":"192.168.225.3",
+host = {"BS3": {"IP":"192.168",
                 "Nulos":0,
                 },
-        "BS2":{"IP":"192.168.225.2",
+        "BS2":{"IP":"192.168",
                 "Nulos":0,
                 },
-        "BS10":{"IP":"192.168.225.10",
+        "BS10":{"IP":"192.168",
                 "Nulos":0,
                 },
-        "BS13":{"IP":"192.168.225.13",
+        "BS13":{"IP":"192.168",
                 "Nulos":0,
                 }}
 
 port = 22
-username = "ubnt"
-password = "3m1sor@"
+username = ""
+password = ""
 
 ruta="C:/Escaneos"
 
