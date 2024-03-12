@@ -1,0 +1,135 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[11]:
+
+
+import paramiko
+import json
+import datetime
+import time
+import keyboard
+import os
+from Telegram_v1 import aviso
+
+#reboot
+#
+mensaje=()
+diccionario={}
+host = {"BS3": {"IP":"192.168.225.3",
+                "Nulos":0,
+                },
+        "BS2":{"IP":"192.168.225.2",
+                "Nulos":0,
+                },
+        "BS10":{"IP":"192.168.225.10",
+                "Nulos":0,
+                },
+        "BS13":{"IP":"192.168.225.13",
+                "Nulos":0,
+                }}
+
+port = 22
+username = "ubnt"
+password = "3m1sor@"
+
+ruta="C:/Escaneos"
+
+os.makedirs(ruta, exist_ok=True)
+
+while True:
+    print("Ejecutando escaneo, mantenga presionado q para salir")
+    
+    for key in host.keys():
+    # Crea un cliente SSH
+        client = paramiko.SSHClient()
+
+        # Configura el cliente para que no solicite confirmación de clave pública
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        # Conecta al servidor
+        client.connect(host[key]["IP"], port, username, password)
+
+        # Ejecuta un comando en el servidor
+        stdin, stdout, stderr = client.exec_command("wstalist")
+
+        mensaje=stdout.readlines()
+
+        client.close()
+
+
+        #mensaje.pop(0)
+        #mensaje.pop(len(mensaje)-1)
+        #print(mensaje)
+        #diccionario=mensaje
+        #print(diccionario.keys())
+        mensaje2 = ''.join(mensaje)
+        mensaje3 = json.loads(mensaje2)
+        """ print(type(mensaje3))
+        print(mensaje3[0])
+        print(len(mensaje3))
+        print(len(mensaje3[0]))
+        print(mensaje3[0].keys()) """
+        
+        #ANALISIS DE SEÑALES Y REINICIO
+        host[key]["Nulos"]=0
+        for i in range(len(mensaje3)):
+            if "remote" not in mensaje3[i]:
+                    host[key]["Nulos"] +=1          #Cuenta las señales nulas entre todos los clientes de un BS
+                    print("-------------Sumando un nulo-----------")
+                    print(host[key]["Nulos"])
+            try:
+                print(mensaje3[i]["name"],"->",mensaje3[i]["remote"]["signal"])
+                # if mensaje3[i]["remote"]["signal"] == "-":
+                #     host[key]["Nulos"] +=1          #Cuenta las señales nulas entre todos los clientes de un BS
+                #     print("-------------Sumando un nulo-----------")
+                #     print(host[key]["Nulos"])
+            except:
+                print("Error en zona 1")
+        
+        #CUANDO TERMINA DE CONTAR ANALIZA SI HAY UNA ANOMALIA
+        if host[key]["Nulos"] > 2:
+            print("-------------Nulos > 1-----------")
+            #LLAMARA ACÁ A FUNCION DE REINICIO
+            aviso(host[key])
+            print("SE SOLICITÓ REINICIAR EL "+str(host[key]))
+            host[key]["Nulos"] = 0
+            time.sleep(120)
+            #LLAMARA A FUNCIÓN DE TELEGRAM
+
+
+        #ES UNA LISTA DE DICCIONARIOS!
+
+        now=datetime.datetime.now()
+        #nombre="BS3-"+str(now)+".txt"
+        fecha=str(now)
+        fecha=fecha.replace(":",".")
+        #for i in range(len(fecha)):
+        #    print(fecha[i])
+        nombre=str(key)+"-"+fecha+".txt"
+        destino=ruta
+        archivo=destino+"/"+nombre
+        print(archivo)
+
+        # with open(archivo, 'w') as f:
+        #     f.write(str(key)+"\n")
+        #     f.close()
+
+        # with open(archivo, 'a') as f: 
+        #     for i in range(len(mensaje3)):
+        #         try:
+        #             f.write(str(mensaje3[i]["name"])+str("->")+str(mensaje3[i]["remote"]["signal"])+"\n")
+        #         except:
+        #             print("Error en zona 2")
+        #     f.close()
+
+        
+    if keyboard.is_pressed("q"):  # Verificar si se ha presionado una tecla
+        print("SALIENDO.")
+        break
+    time.sleep(10)  # Pausa
+
+
+
+    
+
