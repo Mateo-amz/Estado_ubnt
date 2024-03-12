@@ -1,0 +1,15 @@
+import requests
+token=""
+chat_id="6791782899"
+
+
+#URL TO GET CHAT_ID:
+#url = f"https://api.telegram.org/bot{token}/getUpdates"
+#print(requests.get(url).json())
+
+
+def aviso(BS):
+    mensaje="Quiero reiniciar el "+str(BS)
+    url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={mensaje}"
+    r=requests.get(url)
+    print(r.json())
